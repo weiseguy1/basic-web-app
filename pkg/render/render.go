@@ -3,39 +3,53 @@ package render
 import (
     "bytes"
     "log"
+    "github.com/weiseguy1/basic-web-app/pkg/config"
+    "github.com/weiseguy1/basic-web-app/pkg/models"
     "html/template"
     "net/http"
     "path/filepath"
 )
 
+var app *config.AppConfig
+// NewTemplates sets the config for the template package
+func NewTemplates(a *config.AppConfig){
+   app = a 
+}
+
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+    return td
+}
+
 // RenderTemplate renders templates
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
-    // create a template cache
-    tc, err := createTemplateCache()
-    if err != nil {
-        log.Fatal(err)
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
+    var tc map[string]*template.Template
+    if app.UseCache {
+        // get the template cache from the app config 
+        tc = app.TemplateCache
+    } else {
+        tc, _ = CreateTemplateCache()
     }
+
     // get requested template from cache
     t, ok := tc[tmpl]
     if !ok {
-        log.Fatal(err)
+        log.Fatal("Could not get template from template cache")
     }
 
     buf := new(bytes.Buffer)
 
-    err = t.Execute(buf, nil)
-    if err != nil {
-        log.Println(err)
-    } 
+    td = AddDefaultData(td)
+
+    _ = t.Execute(buf, td)
 
     // render the template
-    _, err = buf.WriteTo(w)
+    _, err := buf.WriteTo(w)
     if err != nil {
         log.Println(err)
     }
 }
 
-func createTemplateCache() (map[string]*template.Template, error) {
+func CreateTemplateCache() (map[string]*template.Template, error) {
     myCache := map[string]*template.Template{} // new way to define map
 
     // get all of the files named *.page.tmpl from ./templates
