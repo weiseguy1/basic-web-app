@@ -4,8 +4,13 @@ import (
     "fmt"
     "net/http"
 )
-// To simplify code it is better to break it up into separate files.
-// This code so far now has a main.go file and a handlers.go file to better organize it.
+/* 
+To simplify code it is better to break it up into separate files.
+For better readability, this code so far now has:
+main.go - The main function of the web app
+handlers.go - Place handers here for different web pages
+render.go - Renders the webpages from the templates folder
+*/
 const portNumber = ":8080"
 
 func main() {
